@@ -124,7 +124,7 @@ void Renderer::tracePhoton(const Scene& scene,
     Vector3f wi = sampleCosineHemisphere(lightInter.normal);
 
     // 单光子通量 = 光源总通量 / 光子数
-    // 总通量 = L_e × A × pi（pi 来自半球积分 cal{cosθ dω}）
+    // 总通量 = L_e × A × pi（pi 来自半球积分 cal{cos(theta) d(omega)}）
     Vector3f power = lightInter.emit * totalEmitArea * M_PI / (float)numPhotonsPerPass;
     Vector3f photonPos = lightInter.coords + lightInter.normal * bias;
 
