@@ -90,7 +90,7 @@ Vector3f Renderer::computeDirectIllumination(
             float cosTheta = std::max(0.0f, dotProduct(normal, wi));
             float cosThetaPrime = std::max(0.0f, dotProduct(lightInter.normal, -wi));
 
-            // L = L_e × f_r × cosθ × cosθ' / r² / pdf
+            // L = L_e × f_r × cos(theta) × cos(theta)' / r^2 / pdf
             L_dir = lightInter.emit * f_r * cosTheta * cosThetaPrime
                     / std::max(dist * dist, 1e-6f) / pdf_light;
         }
@@ -124,7 +124,7 @@ void Renderer::tracePhoton(const Scene& scene,
     Vector3f wi = sampleCosineHemisphere(lightInter.normal);
 
     // 单光子通量 = 光源总通量 / 光子数
-    // 总通量 = L_e × A × π（π 来自半球积分 ∫cosθ dω）
+    // 总通量 = L_e × A × pi（pi 来自半球积分 cal{cosθ dω}）
     Vector3f power = lightInter.emit * totalEmitArea * M_PI / (float)numPhotonsPerPass;
     Vector3f photonPos = lightInter.coords + lightInter.normal * bias;
 
@@ -190,7 +190,7 @@ void Renderer::tracePhoton(const Scene& scene,
         if (get_random_float() > p_survive) break;
 
         // 余弦加权散射方向 + 功率更新
-        // power ← power × Kd/π × cosθ / (p_survive × cosθ/π) = power × Kd / p_survive
+        // power = power × Kd/pi × cos(theta) / (p_survive × cos((theta)/pi) = power × Kd / p_survive
         wi = sampleCosineHemisphere(N);
         power = power * inter.m->Kd / p_survive;
         photonPos = p + N * bias;
@@ -218,7 +218,7 @@ void Renderer::Render(const Scene& scene)
 
     std::vector<Vector3f> framebuffer(scene.width * scene.height, Vector3f(0));
 
-    // 相机：位于 (278, 273, -800)，FOV=40°，看向 +z
+    // 相机：位于 (278, 273, -800)，FOV=40度，看向 +z
     float scale = tan(deg2rad(scene.fov * 0.5f));
     float imageAspectRatio = scene.width / (float)scene.height;
     Vector3f eye_pos(278, 273, -800);
@@ -340,7 +340,7 @@ void Renderer::Render(const Scene& scene)
             }
         }
 
-        // 步骤 5: 辐射度估计 L = fluxAccum / (π × r²)
+        // 步骤 5: 辐射度估计 L = fluxAccum / (pi × r^2)
         parallelFor((int)hitPoints.size(), numThreads, [&](int k) {
             if (!hitPoints[k].valid || hitPoints[k].M == 0) return;
             float r2 = globalRadius * globalRadius;
@@ -348,7 +348,7 @@ void Renderer::Render(const Scene& scene)
             framebuffer[k] = framebuffer[k] + L_photon;
         });
 
-        // 步骤 6: 半径缩小 R_{i+1} = R_i × √((i+α)/(i+1))
+        // 步骤 6: 半径缩小 R_{i+1} = R_i × sqrt((i+alpha)/(i+1))
         globalRadius *= std::sqrt((iter + alpha) / (iter + 1.0f));
 
         UpdateProgress((float)(iter + 1) / numIterations);
