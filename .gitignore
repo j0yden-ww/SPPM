@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Prerequisites
 *.d
 
@@ -67,3 +68,10 @@ vcpkg_installed/
 # test output & cache
 Testing/
 .cache/
+=======
+build/
+*.ppm
+.DS_Store
+*.o
+*.out
+>>>>>>> 201d427 (feat: SPPM)
